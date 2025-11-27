@@ -1,0 +1,11 @@
+# 共通
+node_modules
+dist
+.DS_Store
+
+# 環境変数ファイル（絶対GitHubに上げない）
+server/.env
+client/.env
+
+# Vite のキャッシュ
+client/.vite
