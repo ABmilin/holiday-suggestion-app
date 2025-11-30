@@ -9,6 +9,49 @@ const MOOD_PRESETS = [
   "モヤモヤする",
   "頑張りたい気分",
 ];
+
+// 気分＋気温のサマリ文章を作る関数
+function buildMoodWeatherMessage(mood, temp) {
+  const parts = [];
+
+  if (typeof temp === "number") {
+    if (temp <= 5) {
+      parts.push("今日はかなり冷え込む一日です");
+    } else if (temp <= 15) {
+      parts.push("今日は少し肌寒い一日です");
+    } else if (temp <= 25) {
+      parts.push("今日は過ごしやすい気温の一日です");
+    } else {
+      parts.push("今日は少し暑めの一日です");
+    }
+  }
+
+  if (!mood) {
+    parts.push("今の自分にやさしく過ごせると良いですね。");
+    return parts.join("。");
+  }
+
+  if (mood.includes("寂") || mood.includes("さみ")) {
+    parts.push("なんとなく心細い気分の日ですね");
+    parts.push("静かに落ち着ける時間を大事にしてみましょう");
+  } else if (mood.includes("疲") || mood.includes("だる")) {
+    parts.push("少しお疲れモードかもしれません");
+    parts.push("無理をせず、ゆっくり充電できる過ごし方がおすすめです");
+  } else if (mood.includes("ワクワク") || mood.includes("わくわく")) {
+    parts.push("前向きでワクワクした気分の日ですね");
+    parts.push("新しい本や場所との出会いを楽しんでみましょう");
+  } else if (mood.includes("モヤ") || mood.includes("不安")) {
+    parts.push("ちょっとモヤモヤしたり不安な気持ちがあるかもしれません");
+    parts.push(
+      "考えごとを整理できるような、落ち着いた時間を持てると良さそうです"
+    );
+  } else {
+    parts.push("今日の気分に合った、ささやかな楽しみ方を提案します");
+  }
+
+  return parts.join("。");
+}
+
 function App() {
   const [mood, setMood] = useState("なんか寂しい");
   const [lat, setLat] = useState("");
@@ -72,13 +115,15 @@ function App() {
   const place = result?.plan?.place;
   const books = result?.books ?? [];
 
+  const moodSummary = result ? buildMoodWeatherMessage(mood, temp) : "";
+
   return (
     <div
       style={{
         minHeight: "100vh",
         padding: "24px",
         fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, sans-serif",
-        background: "#f5f5f7"
+        background: "#f5f5f7",
       }}
     >
       <div
@@ -88,7 +133,7 @@ function App() {
           background: "#fff",
           borderRadius: "18px",
           padding: "24px",
-          boxShadow: "0 10px 30px rgba(0,0,0,0.06)"
+          boxShadow: "0 10px 30px rgba(0,0,0,0.06)",
         }}
       >
         <h1 style={{ fontSize: "1.6rem", marginBottom: "0.5rem" }}>
@@ -101,67 +146,68 @@ function App() {
         </p>
 
         {/* 入力フォーム */}
-<form onSubmit={handleSubmit} style={{ marginBottom: "1.5rem" }}>
-  <div style={{ marginBottom: "1rem" }}>
-    <label style={{ display: "block", marginBottom: "0.25rem" }}>
-      今の気分
-    </label>
+        <form onSubmit={handleSubmit} style={{ marginBottom: "1.5rem" }}>
+          <div style={{ marginBottom: "1rem" }}>
+            <label style={{ display: "block", marginBottom: "0.25rem" }}>
+              今の気分
+            </label>
 
-    {/* プリセットボタン */}
-    <div
-      style={{
-        display: "flex",
-        flexWrap: "wrap",
-        gap: "0.5rem",
-        margin: "0.5rem 0"
-      }}
-    >
-      {MOOD_PRESETS.map((label) => (
-        <button
-          key={label}
-          type="button"
-          onClick={() => setMood(label)}
-          style={{
-            borderRadius: "999px",
-            border:
-              mood === label ? "1px solid #007aff" : "1px solid #ddd",
-            padding: "0.25rem 0.75rem",
-            fontSize: "0.8rem",
-            background: mood === label ? "#007aff" : "#f9fafb",
-            color: mood === label ? "#fff" : "#333",
-            cursor: "pointer",
-            transition: "background 0.15s ease, color 0.15s ease"
-          }}
-        >
-          {label}
-        </button>
-      ))}
-    </div>
+            {/* プリセットボタン */}
+            <div
+              style={{
+                display: "flex",
+                flexWrap: "wrap",
+                gap: "0.5rem",
+                margin: "0.5rem 0",
+              }}
+            >
+              {MOOD_PRESETS.map((label) => (
+                <button
+                  key={label}
+                  type="button"
+                  onClick={() => setMood(label)}
+                  style={{
+                    borderRadius: "999px",
+                    border:
+                      mood === label ? "1px solid #007aff" : "1px solid #ddd",
+                    padding: "0.25rem 0.75rem",
+                    fontSize: "0.8rem",
+                    background: mood === label ? "#007aff" : "#f9fafb",
+                    color: mood === label ? "#fff" : "#333",
+                    cursor: "pointer",
+                    transition: "background 0.15s ease, color 0.15s ease",
+                  }}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
 
-    {/* 既存のテキスト入力 */}
-    <input
-      type="text"
-      value={mood}
-      onChange={(e) => setMood(e.target.value)}
-      style={{
-        width: "100%",
-        padding: "0.5rem 0.75rem",
-        borderRadius: "8px",
-        border: "1px solid #ddd"
-      }}
-    />
-    <small style={{ color: "#777" }}>
-      例：「ちょっと疲れてる」「ワクワクしてる」「モヤモヤする」など
-    </small>
-  </div>
+            {/* 自由入力 */}
+            <input
+              type="text"
+              value={mood}
+              onChange={(e) => setMood(e.target.value)}
+              style={{
+                width: "100%",
+                padding: "0.5rem 0.75rem",
+                borderRadius: "8px",
+                border: "1px solid #ddd",
+              }}
+            />
+            <small style={{ color: "#777" }}>
+              例：「ちょっと疲れてる」「ワクワクしてる」「モヤモヤする」など
+            </small>
+          </div>
 
+          {/* 緯度・経度＋現在地ボタン */}
           <div
             style={{
               display: "grid",
               gridTemplateColumns: "1fr 1fr auto",
               gap: "0.75rem",
               alignItems: "end",
-              marginBottom: "1rem"
+              marginBottom: "1rem",
             }}
           >
             <div>
@@ -178,7 +224,7 @@ function App() {
                   width: "100%",
                   padding: "0.5rem 0.75rem",
                   borderRadius: "8px",
-                  border: "1px solid #ddd"
+                  border: "1px solid #ddd",
                 }}
               />
             </div>
@@ -196,7 +242,7 @@ function App() {
                   width: "100%",
                   padding: "0.5rem 0.75rem",
                   borderRadius: "8px",
-                  border: "1px solid #ddd"
+                  border: "1px solid #ddd",
                 }}
               />
             </div>
@@ -209,20 +255,20 @@ function App() {
                 border: "none",
                 cursor: "pointer",
                 background: "#eee",
-                whiteSpace: "nowrap"
+                whiteSpace: "nowrap",
               }}
             >
               現在地を使う
             </button>
           </div>
 
-          {/* ★ ここから追加：地図から場所を選ぶブロック */}
+          {/* 地図から場所を選ぶ */}
           <div style={{ marginBottom: "1rem" }}>
             <p
               style={{
                 marginBottom: "0.25rem",
                 color: "#555",
-                fontSize: "0.85rem"
+                fontSize: "0.85rem",
               }}
             >
               地図をクリックして場所を選ぶこともできます。
@@ -231,7 +277,7 @@ function App() {
               style={{
                 borderRadius: "12px",
                 overflow: "hidden",
-                border: "1px solid #ddd"
+                border: "1px solid #ddd",
               }}
             >
               <MapView
@@ -240,14 +286,12 @@ function App() {
                 keyword=""
                 selectable={true}
                 onLocationSelect={({ lat, lon }) => {
-                  // クリックした位置をフォームに反映
                   setLat(lat.toFixed(6));
                   setLon(lon.toFixed(6));
                 }}
               />
             </div>
           </div>
-          {/* ★ 追加ここまで */}
 
           <button
             type="submit"
@@ -259,7 +303,7 @@ function App() {
               cursor: "pointer",
               background: "#007aff",
               color: "#fff",
-              fontWeight: 600
+              fontWeight: 600,
             }}
           >
             {loading ? "考え中..." : "おすすめを出してもらう"}
@@ -274,7 +318,7 @@ function App() {
               padding: "0.75rem 1rem",
               borderRadius: "8px",
               background: "#ffeef0",
-              color: "#b00020"
+              color: "#b00020",
             }}
           >
             {error}
@@ -283,131 +327,169 @@ function App() {
 
         {/* 結果表示 */}
         {result && (
-          <div style={{ display: "grid", gap: "1.5rem" }}>
-            {/* プラン概要 */}
-            <section>
-              <h2 style={{ fontSize: "1.2rem", marginBottom: "0.5rem" }}>
-                今日のプラン
-              </h2>
-              <p style={{ whiteSpace: "pre-line" }}>{result.plan.summary}</p>
-              {typeof temp === "number" && (
-                <p style={{ color: "#555", marginTop: "0.5rem" }}>
-                  現在の気温：{temp}℃（推定）
+          <>
+            {/* 今日の一言サマリ */}
+            {moodSummary && (
+              <section
+                style={{
+                  padding: "0.75rem 1rem",
+                  borderRadius: "12px",
+                  background: "#f1f5f9",
+                  border: "1px solid #e2e8f0",
+                  marginBottom: "1rem",
+                }}
+              >
+                <p
+                  style={{
+                    margin: 0,
+                    fontSize: "0.9rem",
+                    color: "#334155",
+                    lineHeight: 1.6,
+                  }}
+                >
+                  {moodSummary}
                 </p>
-              )}
-            </section>
-
-            {/* 行き先の候補（テキスト版） */}
-            {place && (
-              <section>
-                <h2 style={{ fontSize: "1.2rem", marginBottom: "0.5rem" }}>
-                  行き先の候補
-                </h2>
-                <p>
-                  キーワード：<strong>{place.keyword}</strong>
-                </p>
-                <p style={{ marginTop: "0.25rem" }}>{place.description}</p>
-
-                {lat && lon ? (
-                  <div
-                    style={{
-                      marginTop: "0.75rem",
-                      borderRadius: "12px",
-                      overflow: "hidden",
-                      border: "1px solid #ddd"
-                    }}
-                  >
-                    <MapView
-                      lat={Number(lat)}
-                      lon={Number(lon)}
-                      keyword={place.keyword}
-                    />
-                  </div>
-                ) : (
-                  <p style={{ marginTop: "0.5rem", color: "#777" }}>
-                    緯度・経度を入力すると、この下に地図が表示されます。
-                  </p>
-                )}
               </section>
             )}
 
-            {/* 本のおすすめ */}
-            <section>
-              <h2 style={{ fontSize: "1.2rem", marginBottom: "0.5rem" }}>
-                おすすめの本
-              </h2>
-              {books.length === 0 && (
-                <p>条件に合う本が見つかりませんでした。</p>
-              )}
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
-                  gap: "1rem"
-                }}
-              >
-                {books.map((book) => (
-                  <article
-                    key={book.id}
-                    style={{
-                      border: "1px solid #eee",
-                      borderRadius: "12px",
-                      padding: "0.75rem"
-                    }}
-                  >
-                    {book.thumbnail && (
-                      <img
-                        src={book.thumbnail}
-                        alt={book.title}
-                        style={{
-                          width: "100%",
-                          borderRadius: "8px",
-                          marginBottom: "0.5rem",
-                          objectFit: "cover",
-                          maxHeight: "220px"
-                        }}
+            <div style={{ display: "grid", gap: "1.5rem" }}>
+              {/* プラン概要 */}
+              <section>
+                <h2 style={{ fontSize: "1.2rem", marginBottom: "0.5rem" }}>
+                  今日のプラン
+                </h2>
+                <p style={{ whiteSpace: "pre-line" }}>
+                  {result.plan.summary}
+                </p>
+                {typeof temp === "number" && (
+                  <p style={{ color: "#555", marginTop: "0.5rem" }}>
+                    現在の気温：{temp}℃（推定）
+                  </p>
+                )}
+              </section>
+
+              {/* 行き先の候補 */}
+              {place && (
+                <section>
+                  <h2 style={{ fontSize: "1.2rem", marginBottom: "0.5rem" }}>
+                    行き先の候補
+                  </h2>
+                  <p>
+                    キーワード：<strong>{place.keyword}</strong>
+                  </p>
+                  <p style={{ marginTop: "0.25rem" }}>
+                    {place.description}
+                  </p>
+
+                  {lat && lon ? (
+                    <div
+                      style={{
+                        marginTop: "0.75rem",
+                        borderRadius: "12px",
+                        overflow: "hidden",
+                        border: "1px solid #ddd",
+                      }}
+                    >
+                      <MapView
+                        lat={Number(lat)}
+                        lon={Number(lon)}
+                        keyword={place.keyword}
                       />
-                    )}
-                    <h3 style={{ fontSize: "0.95rem", marginBottom: "0.25rem" }}>
-                      {book.title}
-                    </h3>
-                    {book.authors?.length > 0 && (
-                      <p style={{ fontSize: "0.8rem", color: "#666" }}>
-                        {book.authors.join(", ")}
-                      </p>
-                    )}
-                    {book.description && (
-                      <p
+                    </div>
+                  ) : (
+                    <p style={{ marginTop: "0.5rem", color: "#777" }}>
+                      緯度・経度を入力すると、この下に地図が表示されます。
+                    </p>
+                  )}
+                </section>
+              )}
+
+              {/* 本のおすすめ */}
+              <section>
+                <h2 style={{ fontSize: "1.2rem", marginBottom: "0.5rem" }}>
+                  おすすめの本
+                </h2>
+                {books.length === 0 && (
+                  <p>条件に合う本が見つかりませんでした。</p>
+                )}
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns:
+                      "repeat(auto-fit, minmax(200px, 1fr))",
+                    gap: "1rem",
+                  }}
+                >
+                  {books.map((book) => (
+                    <article
+                      key={book.id}
+                      style={{
+                        border: "1px solid #eee",
+                        borderRadius: "12px",
+                        padding: "0.75rem",
+                      }}
+                    >
+                      {book.thumbnail && (
+                        <img
+                          src={book.thumbnail}
+                          alt={book.title}
+                          style={{
+                            width: "100%",
+                            borderRadius: "8px",
+                            marginBottom: "0.5rem",
+                            objectFit: "cover",
+                            maxHeight: "220px",
+                          }}
+                        />
+                      )}
+                      <h3
                         style={{
-                          fontSize: "0.8rem",
-                          color: "#555",
-                          marginTop: "0.4rem"
+                          fontSize: "0.95rem",
+                          marginBottom: "0.25rem",
                         }}
                       >
-                        {book.description.slice(0, 80)}
-                        {book.description.length > 80 ? "…" : ""}
-                      </p>
-                    )}
-                    {book.infoLink && (
-                      <a
-                        href={book.infoLink}
-                        target="_blank"
-                        rel="noreferrer"
-                        style={{
-                          display: "inline-block",
-                          marginTop: "0.4rem",
-                          fontSize: "0.8rem",
-                          color: "#007aff"
-                        }}
-                      >
-                        くわしく見る
-                      </a>
-                    )}
-                  </article>
-                ))}
-              </div>
-            </section>
-          </div>
+                        {book.title}
+                      </h3>
+                      {book.authors?.length > 0 && (
+                        <p
+                          style={{ fontSize: "0.8rem", color: "#666" }}
+                        >
+                          {book.authors.join(", ")}
+                        </p>
+                      )}
+                      {book.description && (
+                        <p
+                          style={{
+                            fontSize: "0.8rem",
+                            color: "#555",
+                            marginTop: "0.4rem",
+                          }}
+                        >
+                          {book.description.slice(0, 80)}
+                          {book.description.length > 80 ? "…" : ""}
+                        </p>
+                      )}
+                      {book.infoLink && (
+                        <a
+                          href={book.infoLink}
+                          target="_blank"
+                          rel="noreferrer"
+                          style={{
+                            display: "inline-block",
+                            marginTop: "0.4rem",
+                            fontSize: "0.8rem",
+                            color: "#007aff",
+                          }}
+                        >
+                          くわしく見る
+                        </a>
+                      )}
+                    </article>
+                  ))}
+                </div>
+              </section>
+            </div>
+          </>
         )}
 
         {/* 接続状態のチェック（おまけ） */}
@@ -421,7 +503,7 @@ function App() {
               border: "1px solid #ddd",
               background: "#fafafa",
               cursor: "pointer",
-              marginRight: "0.5rem"
+              marginRight: "0.5rem",
             }}
           >
             接続状態を再チェック
@@ -431,7 +513,7 @@ function App() {
               バックエンド:{" "}
               <strong
                 style={{
-                  color: healthStatus === "ok" ? "#0a7c20" : "#b00020"
+                  color: healthStatus === "ok" ? "#0a7c20" : "#b00020",
                 }}
               >
                 {healthStatus}
