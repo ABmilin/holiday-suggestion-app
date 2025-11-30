@@ -2,6 +2,13 @@ import { useState } from "react";
 import { fetchHealth, fetchSuggestions } from "./api";
 import { MapView } from "./MapView";
 
+const MOOD_PRESETS = [
+  "なんか寂しい",
+  "ちょっと疲れてる",
+  "ワクワクしてる",
+  "モヤモヤする",
+  "頑張りたい気分",
+];
 function App() {
   const [mood, setMood] = useState("なんか寂しい");
   const [lat, setLat] = useState("");
@@ -94,26 +101,59 @@ function App() {
         </p>
 
         {/* 入力フォーム */}
-        <form onSubmit={handleSubmit} style={{ marginBottom: "1.5rem" }}>
-          <div style={{ marginBottom: "1rem" }}>
-            <label style={{ display: "block", marginBottom: "0.25rem" }}>
-              今の気分
-            </label>
-            <input
-              type="text"
-              value={mood}
-              onChange={(e) => setMood(e.target.value)}
-              style={{
-                width: "100%",
-                padding: "0.5rem 0.75rem",
-                borderRadius: "8px",
-                border: "1px solid #ddd"
-              }}
-            />
-            <small style={{ color: "#777" }}>
-              例：「ちょっと疲れてる」「ワクワクしてる」「モヤモヤする」など
-            </small>
-          </div>
+<form onSubmit={handleSubmit} style={{ marginBottom: "1.5rem" }}>
+  <div style={{ marginBottom: "1rem" }}>
+    <label style={{ display: "block", marginBottom: "0.25rem" }}>
+      今の気分
+    </label>
+
+    {/* プリセットボタン */}
+    <div
+      style={{
+        display: "flex",
+        flexWrap: "wrap",
+        gap: "0.5rem",
+        margin: "0.5rem 0"
+      }}
+    >
+      {MOOD_PRESETS.map((label) => (
+        <button
+          key={label}
+          type="button"
+          onClick={() => setMood(label)}
+          style={{
+            borderRadius: "999px",
+            border:
+              mood === label ? "1px solid #007aff" : "1px solid #ddd",
+            padding: "0.25rem 0.75rem",
+            fontSize: "0.8rem",
+            background: mood === label ? "#007aff" : "#f9fafb",
+            color: mood === label ? "#fff" : "#333",
+            cursor: "pointer",
+            transition: "background 0.15s ease, color 0.15s ease"
+          }}
+        >
+          {label}
+        </button>
+      ))}
+    </div>
+
+    {/* 既存のテキスト入力 */}
+    <input
+      type="text"
+      value={mood}
+      onChange={(e) => setMood(e.target.value)}
+      style={{
+        width: "100%",
+        padding: "0.5rem 0.75rem",
+        borderRadius: "8px",
+        border: "1px solid #ddd"
+      }}
+    />
+    <small style={{ color: "#777" }}>
+      例：「ちょっと疲れてる」「ワクワクしてる」「モヤモヤする」など
+    </small>
+  </div>
 
           <div
             style={{
@@ -175,6 +215,39 @@ function App() {
               現在地を使う
             </button>
           </div>
+
+          {/* ★ ここから追加：地図から場所を選ぶブロック */}
+          <div style={{ marginBottom: "1rem" }}>
+            <p
+              style={{
+                marginBottom: "0.25rem",
+                color: "#555",
+                fontSize: "0.85rem"
+              }}
+            >
+              地図をクリックして場所を選ぶこともできます。
+            </p>
+            <div
+              style={{
+                borderRadius: "12px",
+                overflow: "hidden",
+                border: "1px solid #ddd"
+              }}
+            >
+              <MapView
+                lat={lat ? Number(lat) : 35.681236}
+                lon={lon ? Number(lon) : 139.767125}
+                keyword=""
+                selectable={true}
+                onLocationSelect={({ lat, lon }) => {
+                  // クリックした位置をフォームに反映
+                  setLat(lat.toFixed(6));
+                  setLon(lon.toFixed(6));
+                }}
+              />
+            </div>
+          </div>
+          {/* ★ 追加ここまで */}
 
           <button
             type="submit"
